@@ -1,0 +1,122 @@
+@font-face {
+  font-family: "Lora";
+  src: url("fonts/Lora-Regular.ttf");
+}
+
+@font-face {
+  font-family: "PP Kyoto";
+  src: url("fonts/PPKyoto-Medium.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "PP Kyoto";
+  src: url("fonts/PPKyoto-MediumItalic.otf");
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "PP Kyoto";
+  src: url("fonts/PPKyoto-Extrabold.otf");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "PP Lettra Mono";
+  src: url("fonts/PPLettraMono-Medium.otf");
+}
+
+#bg {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    url("https://d2w9rnfcy7mm78.cloudfront.net/39073516/original_241bc1dddc64dd22346d2c1fae2554e2.gif?1756264026?bc=0");
+  background-position: fixed;
+  background-size: cover;
+}
+
+.group,
+.date-group {
+  margin-bottom: 1rem;
+}
+
+.date-group {
+  margin-top: -0.3rem;
+}
+
+.group h2,
+.date-group h2 {
+  font-family: "PP Kyoto";
+  font-weight: bold;
+  font-size: 32px;
+}
+
+.space h3,
+.date-space h3 {
+  font-family: "PP Kyoto";
+  font-weight: normal;
+  font-style: italic;
+  font-size: 24px;
+}
+
+.card {
+  outline: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0.3rem;
+  backdrop-filter: blur(10px) brightness(1.3) contrast(1.4) saturate(0.5);
+}
+
+.card p {
+  font-family: "Lora";
+  font-size: 18px;
+}
+
+.box-tag-wrapper {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.box-tag-wrapper > div {
+  width: fit-content;
+  height: fit-content;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+
+  font-family: "PP Lettra Mono";
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.card a {
+  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.card a.internal {
+  filter: opacity(10%) blur(1px);
+}
+
+.card a.internal:hover {
+  filter: opacity(100%);
+}
+
+.card a.external {
+  filter: opacity(30%) blur(1px);
+}
+
+.card a.external:hover {
+  filter: opacity(100%);
+}
+
+.card span.due-date {
+  font-family: "PP Lettra Mono";
+  font-size: 16px;
+  text-decoration: underline;
+}
