@@ -6,8 +6,6 @@ This project is in its infancy and was written by someone with very limited prog
 
 You can follow the development in [this Kinopio space](https://kinopio.club/kn-glue-No2GvJ3kD7NUnJxihn6LG).
 
----
-
 ## Running
 
 Couldn't be simpler: Define your `KINOPIO_API_KEY` in your environment, clone the repo, and run `node server.js`.
