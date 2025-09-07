@@ -17,7 +17,7 @@ git clone https://github.com/ampersandpm/kinopio-glue.git
 Define your `KINOPIO_API_KEY` in your environment,
 
 ```
-$KINOPIO_API_KEY=[paste your api key, found under User → Settings → Developer]
+KINOPIO_API_KEY=[paste your api key, found under User → Settings → Developer]
 ```
 
 and run server.js via [node](https://nodejs.org/en/download):
