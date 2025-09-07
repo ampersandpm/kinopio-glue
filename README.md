@@ -8,6 +8,24 @@ You can follow the development in [this Kinopio space](https://kinopio.club/kn-g
 
 ## Running
 
-Couldn't be simpler: Define your `KINOPIO_API_KEY` in your environment, clone the repo, and run `node server.js`.
+Clone the repository,
+
+```
+git clone https://github.com/ampersandpm/kinopio-glue.git
+```
+
+Define your `KINOPIO_API_KEY` in your environment,
+
+```
+$KINOPIO_API_KEY=[paste your api key, found under User → Settings → Developer]
+```
+
+and run server.js via [node](https://nodejs.org/en/download):
+
+```
+cd kinopio-glue && node server.js
+```
+
+The glue webui should now be available in your browser under `http://localhost:3000`. You can optionally define the port with the environment variable PORT.
 
 You should only run this on a server that you own, like on your own computer, and under no circumstances expose this service to the internet; It's not built for that. I personally run this on a mac mini in a basement that allows me to access it remotely with a virtual local network via [Tailscale](https://tailscale.com/).

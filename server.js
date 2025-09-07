@@ -5,7 +5,7 @@ const path = require("path");
 
 const PORT = process.env.PORT || 3000;
 const API_HOST = "api.kinopio.club";
-const AUTH = `${process.env.KINOPIO_API_KEY}`;
+const AUTH = process.env.KINOPIO_API_KEY;
 const POLL_INTERVAL = 500;
 const PROCESS_INTERVAL = 750;
 
