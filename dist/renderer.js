@@ -137,6 +137,14 @@ window.addEventListener("load", function () {
       },
     );
 
+    // auto-detect plain URLs and convert to links
+    textContent = textContent.replace(
+      /(^|[^"'>=])(https?:\/\/[^\s<>"]+)/gi,
+      function (match, prefix, url) {
+        return prefix + '<a href="' + url + '" target="_blank">' + url + "</a>";
+      },
+    );
+
     // Strip markdown formatting & make truncate empty spaces newlines
     textContent = textContent.replace(/(\*\*|__|~~|`|_)/g, "");
     textContent = textContent.replace(/^#+\s+/gm, "");
