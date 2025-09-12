@@ -49,13 +49,13 @@ h3 {
   gap: 1rem;
 }
 
-.space .card-wrapper.column {
+/*.space .card-wrapper.column {
   flex-direction: column;
 
   > .card {
     grid-template-columns: 270px 30px;
   }
-}
+}*/
 
 .card {
   grid-template-columns: 170px 30px;
