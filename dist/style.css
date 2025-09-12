@@ -106,6 +106,15 @@ html {
   font-size: 18px;
 }
 
+a:not(.internal):not(.external) {
+  color: black;
+  text-underline-offset: 2px;
+}
+
+a:not(.internal):not(.external):hover {
+  text-underline-offset: 6px;
+}
+
 .box-tag-wrapper {
   display: flex;
   flex-wrap: wrap-reverse;
