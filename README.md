@@ -6,6 +6,8 @@ This project is in its infancy and was written by someone with very limited prog
 
 You can follow the development in [this Kinopio space](https://kinopio.club/kn-glue-No2GvJ3kD7NUnJxihn6LG).
 
+Documentation is dervied from that kinopio space in [this document](https://twine.ampersand.pm/?card=https://kinopio.club/No2GvJ3kD7NUnJxihn6LG/piwJYC7kD6v1LvCbzW7fR).
+
 ## Running
 
 Clone the repository,

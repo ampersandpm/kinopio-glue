@@ -29,6 +29,11 @@
   src: url("fonts/PPLettraMono-Medium.otf");
 }
 
+html {
+  overscroll-behavior: none;
+  background-color: #868b88;
+}
+
 #bg {
   background:
     linear-gradient(
@@ -39,6 +44,12 @@
     url("https://d2w9rnfcy7mm78.cloudfront.net/39073516/original_241bc1dddc64dd22346d2c1fae2554e2.gif?1756264026?bc=0");
   background-position: fixed;
   background-size: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
 }
 
 .group,
@@ -48,6 +59,24 @@
 
 .date-group {
   margin-top: -0.3rem;
+}
+
+.space-header-wrapper div:nth-child(1) {
+  width: 22px;
+  height: 22px;
+}
+
+.space-header-wrapper div:nth-child(1) {
+  margin-top: 7px;
+  background-size: cover;
+  margin-right: 6px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  transform: rotate(45deg);
+}
+
+.space-header-wrapper {
+  display: flex;
 }
 
 .group h2,

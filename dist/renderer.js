@@ -257,7 +257,18 @@ window.addEventListener("load", function () {
     var cardWrapper = document.createElement("div");
     cardWrapper.className = "card-wrapper";
 
-    spaceWrap.appendChild(spaceTitle);
+    var headerWrapper = document.createElement("div");
+    headerWrapper.className = "space-header-wrapper";
+
+    var bgDiv = document.createElement("div");
+    var firstItem = Array.isArray(items) && items.length ? items[0] : null;
+    var bg =
+      firstItem && firstItem.spaceBackground ? firstItem.spaceBackground : null;
+    bgDiv.style.backgroundImage = "url('" + bg + "')";
+    headerWrapper.appendChild(bgDiv);
+    headerWrapper.appendChild(spaceTitle);
+
+    spaceWrap.appendChild(headerWrapper);
     spaceWrap.appendChild(cardWrapper);
 
     // Sort items by text length, longest first, then group by first box tag
