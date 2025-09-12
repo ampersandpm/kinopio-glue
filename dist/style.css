@@ -52,12 +52,25 @@ html {
   z-index: -1;
 }
 
+#backlog-wrapper {
+  > h2 {
+    font-family: "PP Kyoto";
+    font-weight: bold;
+    font-size: 32px;
+  }
+
+  > .date-group h2 {
+    font-size: 24px;
+  }
+}
+
 .group,
 .date-group {
   margin-bottom: 1rem;
 }
 
-.date-group {
+.date-group,
+#backlog-wrapper {
   margin-top: -0.3rem;
 }
 

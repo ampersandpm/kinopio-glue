@@ -484,6 +484,9 @@ window.addEventListener("load", function () {
     var calendarDiv = document.createElement("div");
     calendarDiv.id = "calendar";
     var calendarFrag = document.createDocumentFragment();
+    var backlogFrag = document.createDocumentFragment();
+
+    var todayKey = new Date().toISOString().slice(0, 10);
 
     for (var k = 0; k < keys.length; k++) {
       var key = keys[k];
@@ -564,7 +567,35 @@ window.addEventListener("load", function () {
       }
 
       if (groupDone) groupWrap.classList.add("done");
-      calendarFrag.appendChild(groupWrap);
+
+      if (key !== "no-date" && key < todayKey) {
+        backlogFrag.appendChild(groupWrap);
+      } else {
+        calendarFrag.appendChild(groupWrap);
+      }
+    }
+
+    if (backlogFrag.children.length > 0) {
+      var backlogWrapper = document.createElement("div");
+      backlogWrapper.id = "backlog-wrapper";
+
+      var backlogTitle = document.createElement("h2");
+      backlogTitle.textContent = "✷ Backlog";
+      backlogWrapper.appendChild(backlogTitle);
+
+      let allBacklogGroupsDone = true;
+      for (let i = 0; i < backlogFrag.children.length; i++) {
+        if (!backlogFrag.children[i].classList.contains("done")) {
+          allBacklogGroupsDone = false;
+          break;
+        }
+      }
+      if (allBacklogGroupsDone) {
+        backlogWrapper.classList.add("done");
+      }
+
+      backlogWrapper.appendChild(backlogFrag);
+      calendarDiv.appendChild(backlogWrapper);
     }
 
     calendarDiv.appendChild(calendarFrag);
