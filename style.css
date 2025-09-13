@@ -59,10 +59,6 @@ html {
   border-radius: 6px;
   font-family: "PP Kyoto";
 
-  > p {
-    margin-bottom: 10px;
-  }
-
   > div {
     width: 100%;
     display: flex;
