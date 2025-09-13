@@ -35,41 +35,49 @@
         </p>
         <br />
         <p>
-          This form sets your api key into a local cookie. It does not send it
-          to the server.
+          This form sets your api key into local storage. It does not send it to
+          the server.
         </p>
         <br />
         <div>
           <input type="text" id="api-key" name="api-key" />
-          <button id="save-api-key">Set</button>
+          <button id="set-key">Set</button>
           <script>
             const apiKeyInput = document.getElementById("api-key");
-            const saveApiKeyButton = document.getElementById("save-api-key");
+            const setKeyButton = document.getElementById("set-key");
 
-            const saveApiKey = () => {
+            const setKey = async () => {
               const apiKey = apiKeyInput.value;
-              localStorage.setItem("KINOPIO_API_KEY", apiKey);
+
+              const response = await fetch("https://api.kinopio.club/user", {
+                headers: {
+                  Authorization: apiKey,
+                },
+              });
+
+              if (response.ok) {
+                localStorage.setItem("KINOPIO_API_KEY", apiKey);
+                location.reload();
+              } else {
+                alert("Invalid key — make sure you've copied it correctly.");
+              }
             };
 
-            saveApiKeyButton.addEventListener("click", saveApiKey);
-            apiKeyInput.addEventListener("keypress", (event) => {
+            setKeyButton.addEventListener("click", async () => {
+              await setKey();
+            });
+
+            apiKeyInput.addEventListener("keypress", async (event) => {
               if (event.key === "Enter") {
-                saveApiKey();
+                await setKey();
               }
             });
 
-            if (AUTH) {
+            if (localStorage.getItem("KINOPIO_API_KEY")) {
               document.getElementById("api-form").className = "done";
             }
           </script>
         </div>
-        <br />
-        <p>
-          <i
-            >You may need to reload the page a few times after setting the
-            key.</i
-          >
-        </p>
       </div>
     </div>
     <div id="render-target"></div>

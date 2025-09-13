@@ -16,7 +16,7 @@ async function fetchData(path) {
       },
     });
     const data = await response.json();
-    console.log(`☈ Received ${path} with http:${response.status}`);
+    // console.log(`☈ Received ${path} with http:${response.status}`);
     return { statusCode: response.status, body: data };
   } catch (error) {
     console.error("Fetch error:", error);
@@ -32,7 +32,7 @@ async function collect() {
 
   localStorage.setItem("todos", JSON.stringify(todosResult.body));
   localStorage.setItem("groups", JSON.stringify(groupsResult.body));
-  console.log("ǂ Piped data into localStorage");
+  // console.log("ǂ Piped data into localStorage");
 
   return [todosResult, groupsResult];
 }
@@ -175,7 +175,7 @@ function restructure() {
       };
     }
 
-    console.log(`⏚ Processed ${rawSpaces.length} spaces.`);
+    // console.log(`⏚ Processed ${rawSpaces.length} spaces.`);
 
     const processedGroups = {};
     for (const group of rawGroups) {
@@ -193,7 +193,7 @@ function restructure() {
       localStorage.setItem(groupKey, JSON.stringify(groupedSpaces));
       processedGroups[groupKey] = true;
     }
-    console.log(`⏚ Processed ${rawGroups.length} groups.`);
+    // console.log(`⏚ Processed ${rawGroups.length} groups.`);
 
     localStorage.setItem(
       "processed_spaces",
@@ -208,9 +208,7 @@ function restructure() {
   }
 }
 
-if (!AUTH) {
-  console.log("Please set KINOPIO_API_KEY in localStorage");
-} else {
+if (AUTH) {
   startPolling();
   setInterval(() => {
     restructure();

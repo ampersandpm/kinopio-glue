@@ -2,30 +2,63 @@
 // URL parameters -> arrays of relevant files
 // -------------------------------------------------------------------
 
-// url parameters -> arrays
 const params = new URLSearchParams(window.location.search);
 const group = params.get("group");
 const space = params.get("space");
-var groups = group ? group.toLowerCase().split(",") : [];
-var spaces = space ? space.toLowerCase().split(",") : [];
+const groupsOrig = group ? group.toLowerCase().split(",") : [];
+const spacesOrig = space ? space.toLowerCase().split(",") : [];
 
-// Get processed data from localStorage instead of using XHR
+(function () {
+  const _set = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function (key, value) {
+    _set(key, value);
+    try {
+      if (/^(processed_spaces|processed_groups|space_|group_)/.test(key)) {
+        clearTimeout(window.__ks_timer);
+        window.__ks_timer = setTimeout(
+          () =>
+            window.dispatchEvent(
+              new CustomEvent("processedStorageUpdated", { detail: { key } }),
+            ),
+          25,
+        );
+      }
+    } catch (e) {}
+  };
+})();
+
+window.addEventListener("storage", (e) => {
+  try {
+    if (
+      e.key &&
+      /^(processed_spaces|processed_groups|space_|group_)/.test(e.key)
+    )
+      window.dispatchEvent(
+        new CustomEvent("processedStorageUpdated", { detail: { key: e.key } }),
+      );
+  } catch (e) {}
+});
+
+// -------------------------------------------------------------------
+// helpers
+// -------------------------------------------------------------------
+
 function getProcessedSpaces() {
-  const processedSpaces = JSON.parse(
-    localStorage.getItem("processed_spaces") || "[]",
-  );
-  return processedSpaces;
+  return JSON.parse(localStorage.getItem("processed_spaces") || "[]");
 }
 
 function getProcessedGroups() {
-  const processedGroups = JSON.parse(
-    localStorage.getItem("processed_groups") || "[]",
-  );
-  return processedGroups;
+  return JSON.parse(localStorage.getItem("processed_groups") || "[]");
 }
 
 // full names -> groups & spaces arrays
-function updateNames(processedKeys, targetArray, keyPrefix) {
+function updateNames(
+  processedKeys,
+  targetArray,
+  keyPrefix,
+  currentGroups,
+  currentSpaces,
+) {
   const lookup = Object.fromEntries(
     processedKeys
       .filter((key) => key.startsWith(keyPrefix))
@@ -40,7 +73,8 @@ function updateNames(processedKeys, targetArray, keyPrefix) {
   if (
     (!targetArray || targetArray.length === 0) &&
     (window.__mapsFilled ||
-      ((!groups || groups.length === 0) && (!spaces || spaces.length === 0)))
+      ((!currentGroups || currentGroups.length === 0) &&
+        (!currentSpaces || currentSpaces.length === 0)))
   ) {
     window.__mapsFilled = true;
     return processedKeys.filter((key) => key.startsWith(keyPrefix));
@@ -49,52 +83,87 @@ function updateNames(processedKeys, targetArray, keyPrefix) {
   return targetArray?.map((item) => lookup[item.toLowerCase()] || item) || [];
 }
 
-const processedSpaces = getProcessedSpaces();
-const processedGroups = getProcessedGroups();
-
-groups = updateNames(processedGroups, groups, "group_");
-spaces = updateNames(processedSpaces, spaces, "space_");
-
 // -------------------------------------------------------------------
-//  Condensing relevant files
+// Compute a simple hash of all relevant storage entries
 // -------------------------------------------------------------------
-
-if (!groups || !groups.length || !spaces || !spaces.length) {
-} else {
-  var remaining = spaces.slice();
-
-  groups.forEach(function (g) {
-    const payload = JSON.parse(localStorage.getItem(g) || "[]");
-    if (!payload || !Array.isArray(payload)) return;
-
-    // collect identifiers to match against entries in spaces array
-    var ids = new Set();
-    payload.forEach(function (sp) {
-      if (sp.spaceId) ids.add(String(sp.spaceId));
-      if (sp.spaceUrl) ids.add(String(sp.spaceUrl));
-      if (sp.spaceName) ids.add(String(sp.spaceName));
-    });
-
-    // filter out any space entries that include any of the collected ids
-    remaining = remaining.filter(function (entry) {
-      if (!entry || typeof entry !== "string") return true;
-      for (var id of ids) {
-        if (!id) continue;
-        if (entry.indexOf(id) !== -1) return false;
+function storageHash() {
+  try {
+    const re = /^(processed_spaces|processed_groups|space_|group_)/;
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++)
+      keys.push(localStorage.key(i));
+    keys.sort();
+    let s = "";
+    for (const k of keys) {
+      if (re.test(k)) {
+        const v = localStorage.getItem(k);
+        s += k + ":" + (v == null ? "" : v) + "|";
       }
-      return true;
-    });
-  });
-
-  spaces = remaining;
+    }
+    // djb2
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
+    return (h >>> 0).toString(36);
+  } catch (e) {
+    return "";
+  }
 }
 
 // -------------------------------------------------------------------
-//  Rendering time!
+// Rendering helper!
 // -------------------------------------------------------------------
 
-window.addEventListener("load", function () {
+function renderOnce() {
   const target = document.getElementById("render-target");
+  if (!target) return;
+  target.innerHTML = "";
+
+  const processedSpacesKeys = getProcessedSpaces();
+  const processedGroupsKeys = getProcessedGroups();
+
+  let groups = updateNames(
+    processedGroupsKeys,
+    groupsOrig,
+    "group_",
+    groupsOrig,
+    spacesOrig,
+  );
+  let spaces = updateNames(
+    processedSpacesKeys,
+    spacesOrig,
+    "space_",
+    groupsOrig,
+    spacesOrig,
+  );
+
+  if (!groups || !groups.length || !spaces || !spaces.length) {
+  } else {
+    var remaining = spaces.slice();
+
+    groups.forEach(function (g) {
+      const payload = JSON.parse(localStorage.getItem(g) || "[]");
+      if (!payload || !Array.isArray(payload)) return;
+
+      var ids = new Set();
+      payload.forEach(function (sp) {
+        if (sp.spaceId) ids.add(String(sp.spaceId));
+        if (sp.spaceUrl) ids.add(String(sp.spaceUrl));
+        if (sp.spaceName) ids.add(String(sp.spaceName));
+      });
+
+      remaining = remaining.filter(function (entry) {
+        if (!entry || typeof entry !== "string") return true;
+        for (var id of ids) {
+          if (!id) continue;
+          if (entry.indexOf(id) !== -1) return false;
+        }
+        return true;
+      });
+    });
+
+    spaces = remaining;
+  }
+
   var dateCards = [];
 
   function fetchJson(key) {
@@ -258,8 +327,6 @@ window.addEventListener("load", function () {
     return card;
   }
 
-  // this section covers rendering the cards into groups & spaces
-
   function createSpaceWrap(titleText, items) {
     var spaceWrap = document.createElement("div");
     spaceWrap.className = "space";
@@ -335,10 +402,11 @@ window.addEventListener("load", function () {
 
     if (
       titleText &&
-      chrono.parseDate(titleText) &&
+      window.chrono &&
+      window.chrono.parseDate(titleText) &&
       titleText
         .toLowerCase()
-        .includes(chrono.parseDate(titleText).getFullYear())
+        .includes(window.chrono.parseDate(titleText).getFullYear())
     ) {
       spaceWrap.classList.add("hidden");
     }
@@ -419,7 +487,6 @@ window.addEventListener("load", function () {
     function dateKeyFromItem(it) {
       if (!it) return "no-date";
       if (it.dueDateIso && typeof it.dueDateIso === "string") {
-        // ISO like 2025-09-05T12:34:56.000Z -> take date part
         return it.dueDateIso.slice(0, 10);
       }
       if (it.dueDate) {
@@ -431,7 +498,6 @@ window.addEventListener("load", function () {
 
     function displayFromKey(key) {
       if (!key || key === "no-date") return "No date";
-      if (key === "no-date") return "No date";
       const parts = key.split("-");
       const d = new Date(
         parseInt(parts[0]),
@@ -469,12 +535,10 @@ window.addEventListener("load", function () {
       return a < b ? -1 : a > b ? 1 : 0;
     });
 
-    // Remove the inline due-date from rendered cards
     function stripInlineDue(cardEl) {
       var spans = cardEl.querySelectorAll("span.due-date");
       for (var si = 0; si < spans.length; si++) {
         var sp = spans[si];
-        // remove preceding whitespace/br
         var prev = sp.previousSibling;
         while (
           prev &&
@@ -489,7 +553,6 @@ window.addEventListener("load", function () {
       }
     }
 
-    // Prevent createCard from mutating the global dateCards while rendering the calendar
     var __savedDateCards = dateCards;
     dateCards = [];
 
@@ -513,7 +576,6 @@ window.addEventListener("load", function () {
 
       var groupDone = true;
 
-      // Sort spaces, prioritizing the one that the date is native to
       const spaceNames = Object.keys(groupData.spaces).sort((a, b) => {
         const aNative = groupData.spaces[a].some(
           (item) => item.dueDateParsedFromSpace,
@@ -524,8 +586,6 @@ window.addEventListener("load", function () {
 
         if (aNative && !bNative) return -1;
         if (!aNative && bNative) return 1;
-
-        // If both are native or neither are, sort alphabetically
         a = (a || "").toLowerCase();
         b = (b || "").toLowerCase();
         return a.localeCompare(b);
@@ -538,7 +598,6 @@ window.addEventListener("load", function () {
         var spaceWrap = document.createElement("div");
         spaceWrap.className = "date-space";
 
-        // If any item date came from the space title, omit the header
         var customHeader = false;
         for (var t = 0; t < items.length; t++) {
           if (items[t].dueDateParsedFromSpace === true) {
@@ -613,9 +672,37 @@ window.addEventListener("load", function () {
     calendarDiv.appendChild(calendarFrag);
 
     dateCards = __savedDateCards;
-  }
 
-  if (calendarDiv) {
     target.prepend(calendarDiv);
+  }
+}
+
+// initlal render
+window.addEventListener("load", () => {
+  try {
+    window.__ks_last_hash = storageHash();
+    renderOnce();
+  } catch (e) {
+    console.error("Render error:", e);
+  }
+});
+
+// in-place changes
+window.addEventListener("processedStorageUpdated", () => {
+  try {
+    const newHash = storageHash();
+    if (newHash === window.__ks_last_hash) return;
+    window.__ks_last_hash = newHash;
+
+    if (document.hidden) {
+      clearTimeout(window.__ks_vis_timer);
+      window.__ks_vis_timer = setTimeout(() => {
+        if (!document.hidden) renderOnce();
+      }, 250);
+    } else {
+      renderOnce();
+    }
+  } catch (e) {
+    console.error("Re-render error:", e);
   }
 });
