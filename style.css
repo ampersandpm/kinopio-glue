@@ -59,10 +59,12 @@ html {
   border-radius: 6px;
   font-family: "PP Kyoto";
 
-  > div {
-    width: 100%;
-    display: flex;
-    gap: 10px;
+  > div > input {
+    width: 150px;
+  }
+
+  > div > button {
+    width: 50px;
   }
 }
 
@@ -159,7 +161,7 @@ a:not(.internal):not(.external):hover {
   font-size: 14px;
 }
 
-.card a {
+a {
   transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
 }
 

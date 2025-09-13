@@ -1,7 +1,7 @@
 const API_HOST = "api.kinopio.club";
 const AUTH = localStorage.getItem("KINOPIO_API_KEY") || "";
-const POLL_INTERVAL = 500;
-const PROCESS_INTERVAL = 750;
+const POLL_INTERVAL = 1500;
+const PROCESS_INTERVAL = 1750;
 
 // -------------------------------------------------------------------
 // Collection of tasks into raw json
