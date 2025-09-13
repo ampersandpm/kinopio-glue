@@ -52,6 +52,24 @@ html {
   z-index: -1;
 }
 
+#api-form > div {
+  background-color: white;
+  padding: 1rem;
+  outline: 1px solid #aaa;
+  border-radius: 6px;
+  font-family: "PP Kyoto";
+
+  > p {
+    margin-bottom: 10px;
+  }
+
+  > div {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+  }
+}
+
 #backlog-wrapper {
   > h2 {
     font-family: "PP Kyoto";

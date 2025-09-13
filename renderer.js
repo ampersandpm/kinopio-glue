@@ -9,23 +9,32 @@ const space = params.get("space");
 var groups = group ? group.toLowerCase().split(",") : [];
 var spaces = space ? space.toLowerCase().split(",") : [];
 
-// maps of directories -> local constants
-var xhrGroups = new XMLHttpRequest();
-xhrGroups.open("GET", "groups/map.txt", false);
-xhrGroups.send(null);
-const groupsMap = xhrGroups.responseText;
+// Get processed data from localStorage instead of using XHR
+function getProcessedSpaces() {
+  const processedSpaces = JSON.parse(
+    localStorage.getItem("processed_spaces") || "[]",
+  );
+  return processedSpaces;
+}
 
-var xhrSpaces = new XMLHttpRequest();
-xhrSpaces.open("GET", "spaces/map.txt", false);
-xhrSpaces.send(null);
-const spacesMap = xhrSpaces.responseText;
+function getProcessedGroups() {
+  const processedGroups = JSON.parse(
+    localStorage.getItem("processed_groups") || "[]",
+  );
+  return processedGroups;
+}
 
 // full names -> groups & spaces arrays
-function updateNames(map, targetArray) {
-  const lines = map.split("\n").filter((line) => line.includes("."));
-
+function updateNames(processedKeys, targetArray, keyPrefix) {
   const lookup = Object.fromEntries(
-    lines.map((line) => [line.split(".")[0].toLowerCase(), line]),
+    processedKeys
+      .filter((key) => key.startsWith(keyPrefix))
+      .map((key) => {
+        const parts = key.split("_");
+        const id = parts[parts.length - 1];
+        const name = parts.slice(1, -1).join("_").toLowerCase();
+        return [name, key];
+      }),
   );
 
   if (
@@ -34,13 +43,17 @@ function updateNames(map, targetArray) {
       ((!groups || groups.length === 0) && (!spaces || spaces.length === 0)))
   ) {
     window.__mapsFilled = true;
-    return lines.slice();
+    return processedKeys.filter((key) => key.startsWith(keyPrefix));
   }
 
   return targetArray?.map((item) => lookup[item.toLowerCase()] || item) || [];
 }
-groups = updateNames(groupsMap, groups);
-spaces = updateNames(spacesMap, spaces);
+
+const processedSpaces = getProcessedSpaces();
+const processedGroups = getProcessedGroups();
+
+groups = updateNames(processedGroups, groups, "group_");
+spaces = updateNames(processedSpaces, spaces, "space_");
 
 // -------------------------------------------------------------------
 //  Condensing relevant files
@@ -51,31 +64,26 @@ if (!groups || !groups.length || !spaces || !spaces.length) {
   var remaining = spaces.slice();
 
   groups.forEach(function (g) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "groups/" + g, false);
-    xhr.send(null);
-    if (xhr.status >= 200 && xhr.responseText) {
-      var payload = JSON.parse(xhr.responseText);
-      if (!Array.isArray(payload)) return;
+    const payload = JSON.parse(localStorage.getItem(g) || "[]");
+    if (!payload || !Array.isArray(payload)) return;
 
-      // collect identifiers to match against entries in spaces array
-      var ids = new Set();
-      payload.forEach(function (sp) {
-        if (sp.spaceId) ids.add(String(sp.spaceId));
-        if (sp.spaceUrl) ids.add(String(sp.spaceUrl));
-        if (sp.spaceName) ids.add(String(sp.spaceName));
-      });
+    // collect identifiers to match against entries in spaces array
+    var ids = new Set();
+    payload.forEach(function (sp) {
+      if (sp.spaceId) ids.add(String(sp.spaceId));
+      if (sp.spaceUrl) ids.add(String(sp.spaceUrl));
+      if (sp.spaceName) ids.add(String(sp.spaceName));
+    });
 
-      // filter out any space entries that include any of the collected ids
-      remaining = remaining.filter(function (entry) {
-        if (!entry || typeof entry !== "string") return true;
-        for (var id of ids) {
-          if (!id) continue;
-          if (entry.indexOf(id) !== -1) return false;
-        }
-        return true;
-      });
-    }
+    // filter out any space entries that include any of the collected ids
+    remaining = remaining.filter(function (entry) {
+      if (!entry || typeof entry !== "string") return true;
+      for (var id of ids) {
+        if (!id) continue;
+        if (entry.indexOf(id) !== -1) return false;
+      }
+      return true;
+    });
   });
 
   spaces = remaining;
@@ -89,12 +97,8 @@ window.addEventListener("load", function () {
   const target = document.getElementById("render-target");
   var dateCards = [];
 
-  function fetchJson(path) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", path, false);
-    xhr.send(null);
-    if (xhr.status >= 200 && xhr.responseText)
-      return JSON.parse(xhr.responseText);
+  function fetchJson(key) {
+    return JSON.parse(localStorage.getItem(key) || "null");
   }
 
   function createCard(item) {
@@ -132,7 +136,7 @@ window.addEventListener("load", function () {
     // markdown links
     textContent = textContent.replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      function (match, linkText, url) {
+      function (linkText, url) {
         return '<a href="' + url + '" target="_blank">' + linkText + "</a>";
       },
     );
@@ -367,7 +371,7 @@ window.addEventListener("load", function () {
   }
 
   groups.forEach(function (g) {
-    var payload = fetchJson("groups/" + g);
+    var payload = fetchJson(g);
     if (!payload || !Array.isArray(payload)) return;
 
     var groupName = payload[0] && payload[0].groupName;
@@ -379,7 +383,7 @@ window.addEventListener("load", function () {
     var standaloneItems = [];
 
     spaces.forEach(function (s) {
-      var payload = fetchJson("spaces/" + s);
+      var payload = fetchJson(s);
       if (!payload) return;
 
       var items = Array.isArray(payload) ? payload : [payload];

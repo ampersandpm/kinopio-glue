@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glue</title>
+    <link rel="stylesheet" href="reset.css" />
+    <link rel="stylesheet" href="layout.css" />
+    <link rel="stylesheet" href="style.css" />
+
+    <script type="module">
+      import * as chrono from "https://esm.sh/chrono-node@2";
+      window.chrono = chrono;
+    </script>
+    <script src="fetcher.js"></script>
+    <script src="renderer.js"></script>
+  </head>
+  <body>
+    <div id="bg"></div>
+    <div id="api-form">
+      <div>
+        <p>
+          Get your api key by going to your user profile picture → Settings →
+          Developer.
+        </p>
+        <p>
+          This form sets your api key into a local cookie. It does not send it
+          to the server.
+        </p>
+        <div>
+          <input type="text" id="api-key" name="api-key" />
+          <button id="save-api-key">Set</button>
+          <script>
+            const apiKeyInput = document.getElementById("api-key");
+            const saveApiKeyButton = document.getElementById("save-api-key");
+
+            const saveApiKey = () => {
+              const apiKey = apiKeyInput.value;
+              localStorage.setItem("KINOPIO_API_KEY", apiKey);
+            };
+
+            saveApiKeyButton.addEventListener("click", saveApiKey);
+            apiKeyInput.addEventListener("keypress", (event) => {
+              if (event.key === "Enter") {
+                saveApiKey();
+              }
+            });
+
+            if (AUTH) {
+              document.getElementById("api-form").className = "done";
+            }
+          </script>
+        </div>
+      </div>
+    </div>
+    <div id="render-target"></div>
+  </body>
+</html>
