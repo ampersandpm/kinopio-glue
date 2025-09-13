@@ -136,8 +136,16 @@ window.addEventListener("load", function () {
     // markdown links
     textContent = textContent.replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      function (linkText, url) {
+      function (match, linkText, url) {
         return '<a href="' + url + '" target="_blank">' + linkText + "</a>";
+      },
+    );
+
+    // auto-detect plain URLs and convert to links
+    textContent = textContent.replace(
+      /(^|[^"'>=])(https?:\/\/[^\s<>"]+)/gi,
+      function (match, prefix, url) {
+        return prefix + '<a href="' + url + '" target="_blank">' + url + "</a>";
       },
     );
 
