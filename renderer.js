@@ -219,7 +219,6 @@ function renderOnce() {
     );
 
     // Strip markdown formatting & make truncate empty spaces newlines
-    textContent = textContent.replace(/(\*\*|__|~~|`|_)/g, "");
     textContent = textContent.replace(/^#+\s+/gm, "");
     textContent = textContent.replace(/\n+$/, "");
     textContent = textContent.replace(/\n\n/g, "\n");
