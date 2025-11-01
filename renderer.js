@@ -136,6 +136,26 @@ function renderOnce() {
     spacesOrig,
   );
 
+  if (groupsOrig.includes("daily")) {
+    const dailySpaceKeys = processedSpacesKeys.filter((key) => {
+      const payload = fetchJson(key);
+      return (
+        payload &&
+        Array.isArray(payload) &&
+        payload.some(
+          (item) =>
+            item &&
+            item.spaceName &&
+            window.chrono &&
+            window.chrono.parseDate(item.spaceName),
+        )
+      );
+    });
+    dailySpaceKeys.forEach((key) => {
+      if (!spaces.includes(key)) spaces.push(key);
+    });
+  }
+
   if (!groups || !groups.length || !spaces || !spaces.length) {
   } else {
     var remaining = spaces.slice();
