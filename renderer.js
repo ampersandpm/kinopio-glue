@@ -591,6 +591,9 @@ function renderOnce() {
 
       var groupTitle = document.createElement("h2");
       groupTitle.textContent = groupData.display || "";
+      if (key === todayKey) {
+        groupTitle.textContent = "❉ Today";
+      }
       groupWrap.appendChild(groupTitle);
 
       var groupDone = true;
