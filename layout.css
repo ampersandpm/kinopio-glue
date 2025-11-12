@@ -15,6 +15,44 @@
   margin: auto;
 }
 
+#iframe-overlay {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: calc(100vw - 476px);
+  height: calc(100vh - 20px);
+  z-index: 9999;
+}
+
+#iframe-overlay > iframe {
+  width: 100%;
+  height: 100%;
+}
+
+#iframe-overlay > button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 32px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  background-color: #ffb8b3;
+  outline: 1px solid #b2817d;
+  outline-offset: -1px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+#iframe-overlay > button > img {
+  width: 60%;
+  height: 60%;
+}
+
 #render-target {
   margin: 1rem;
 }

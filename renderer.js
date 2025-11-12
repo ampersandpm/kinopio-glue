@@ -118,6 +118,54 @@ function renderOnce() {
   if (!target) return;
   target.innerHTML = "";
 
+  var overlay;
+  var iframe;
+
+  function showOverlay(href) {
+    overlay.style.display = "flex";
+    target.classList.add("overlay-open");
+    iframe.src = href;
+    overlay.style.opacity = "0";
+    overlay.style.transform = "scale(0.8)";
+    setTimeout(() => {
+      overlay.style.opacity = "1";
+      overlay.style.transform = "scale(1)";
+    }, 0);
+  }
+
+  function hideOverlay() {
+    overlay.style.opacity = "0";
+    overlay.style.transform = "scale(0.8)";
+    setTimeout(() => {
+      overlay.style.display = "none";
+      iframe.src = "";
+      target.classList.remove("overlay-open");
+    }, 200);
+  }
+
+  if (!document.getElementById("iframe-overlay")) {
+    overlay = document.createElement("div");
+    overlay.id = "iframe-overlay";
+    overlay.style.zIndex = "9999";
+    overlay.style.display = "none";
+    iframe = document.createElement("iframe");
+    iframe.id = "card-iframe";
+    iframe.style.border = "none";
+    overlay.appendChild(iframe);
+    var closeButton = document.createElement("button");
+    var closeImg = document.createElement("img");
+    closeImg.src =
+      "data:image/svg+xml,%3csvg%20height='10'%20viewBox='0%200%2010%2010'%20width='10'%20xmlns='http://www.w3.org/2000/svg'%3e%3cg%20fill='none'%20fill-rule='evenodd'%20stroke='%23000'%20transform='translate(0%20-.5)'%3e%3cpath%20d='m0%205.5h10'/%3e%3cpath%20d='m0%205.5h10'%20transform='matrix(0%201%20-1%200%2010.5%20.5)'/%3e%3c/g%3e%3c/svg%3e";
+    closeImg.style.transform = "rotate(45deg)";
+    closeButton.appendChild(closeImg);
+    closeButton.addEventListener("click", hideOverlay);
+    overlay.appendChild(closeButton);
+    document.body.appendChild(overlay);
+  } else {
+    overlay = document.getElementById("iframe-overlay");
+    iframe = document.getElementById("card-iframe");
+  }
+
   const processedSpacesKeys = getProcessedSpaces();
   const processedGroupsKeys = getProcessedGroups();
 
@@ -190,6 +238,13 @@ function renderOnce() {
     return JSON.parse(localStorage.getItem(key) || "null");
   }
 
+  function isMobile() {
+    return (
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(max-width: 768px)").matches
+    );
+  }
+
   function createCard(item) {
     var card = document.createElement("div");
     var cardLink = document.createElement("a");
@@ -218,8 +273,19 @@ function renderOnce() {
     }
 
     cardLink.href = `https://kinopio.club/${item.spaceId}/${item.id}`;
-    cardLink.target = "_blank";
     cardLink.className = "internal";
+    cardLink.addEventListener("click", function (e) {
+      if (isMobile()) {
+        return;
+      }
+      e.preventDefault();
+      if (overlay.style.display !== "none") {
+        hideOverlay();
+        setTimeout(() => showOverlay(this.href), 200);
+      } else {
+        showOverlay(this.href);
+      }
+    });
     card.append(cardLink);
 
     // markdown links

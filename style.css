@@ -68,6 +68,20 @@ html {
   }
 }
 
+#iframe-overlay {
+  border-radius: 12px;
+
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#iframe-overlay > iframe {
+  border-radius: 12px;
+  outline: 2px solid #aaa;
+  box-shadow: 0 0 20px #ffffff77;
+}
+
 #backlog-wrapper {
   > h2 {
     font-family: "PP Kyoto";
