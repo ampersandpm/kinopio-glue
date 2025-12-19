@@ -15,6 +15,14 @@
     </script>
     <script src="fetcher.js"></script>
     <script src="renderer.js"></script>
+    <script>
+      window.addEventListener("keydown", (event) => {
+        if (event.altKey && event.key === "r") {
+          event.preventDefault();
+          window.location.reload(true);
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="bg"></div>
