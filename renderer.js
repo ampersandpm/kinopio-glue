@@ -63,10 +63,29 @@ function updateNames(
     processedKeys
       .filter((key) => key.startsWith(keyPrefix))
       .map((key) => {
-        const parts = key.split("_");
-        const id = parts[parts.length - 1];
-        const name = parts.slice(1, -1).join("_").toLowerCase();
-        return [name, key];
+        const payload = JSON.parse(localStorage.getItem(key) || "null");
+        let name = "";
+        if (keyPrefix === "group_") {
+          name =
+            payload && Array.isArray(payload) && payload[0]
+              ? payload[0].groupName || ""
+              : "";
+        } else if (keyPrefix === "space_") {
+          name =
+            payload && Array.isArray(payload) && payload[0]
+              ? payload[0].spaceName || ""
+              : "";
+        }
+        return [
+          name
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .replace(/ /g, "-")
+            .replace(/[^A-Za-z0-9\-_]/g, "")
+            .replace(/-+/g, "-")
+            .replace(/^-+|-+$/g, ""),
+          key,
+        ];
       }),
   );
 
