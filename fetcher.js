@@ -30,11 +30,44 @@ async function collect() {
     fetchData("/user/groups"),
   ]);
 
+  // Store the basic todos and groups data
+  // Full space fetching will happen on-demand in restructure()
   localStorage.setItem("todos", JSON.stringify(todosResult.body));
   localStorage.setItem("groups", JSON.stringify(groupsResult.body));
   // console.log("ǂ Piped data into localStorage");
 
   return [todosResult, groupsResult];
+}
+
+// Fetch full space data for specific space IDs to get connections
+async function fetchFullSpaces(spaceIds) {
+  if (!spaceIds || spaceIds.length === 0) return {};
+
+  const BATCH_SIZE = 4;
+  const fullSpaces = [];
+
+  for (let i = 0; i < spaceIds.length; i += BATCH_SIZE) {
+    const batch = spaceIds.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map((id) => fetchData(`/space/${id}`)),
+    );
+    for (const result of batchResults) {
+      if (result.statusCode === 200 && result.body) {
+        fullSpaces.push(result.body);
+      }
+    }
+    // Small delay between batches to avoid rate limiting
+    if (i + BATCH_SIZE < spaceIds.length) {
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+
+  // Return as a map of spaceId -> full space data
+  const fullSpacesById = {};
+  for (const fs of fullSpaces) {
+    if (fs.id) fullSpacesById[fs.id] = fs;
+  }
+  return fullSpacesById;
 }
 
 function startPolling() {
@@ -123,16 +156,185 @@ function buildFlatCard(card, space, group) {
     spaceDrawingImage: space && space.drawingImage,
     spaceEditedAt: space && space.editedAt,
     spaceEditedByUserId: space && space.editedByUserId,
+    // Sub-task fields (populated later)
+    subTasks: [],
+    parentIds: [],
+    depth: 0,
   };
 }
 
-function restructure() {
+// Build sub-task hierarchy from connections
+// A connection from cardA -> cardB means B is a sub-task of A
+function buildSubTaskHierarchy(flatTodos, connections) {
+  if (!connections || !connections.length) return flatTodos;
+
+  const todoById = {};
+  for (const todo of flatTodos) {
+    todoById[todo.id] = todo;
+  }
+
+  // Build parent-child relationships from connections
+  // Only consider connections between todo cards
+  for (const conn of connections) {
+    const parent = todoById[conn.startItemId];
+    const child = todoById[conn.endItemId];
+
+    if (parent && child && parent.id !== child.id) {
+      // Add child to parent's subTasks (avoid duplicates)
+      if (!parent.subTasks.some((s) => s.id === child.id)) {
+        parent.subTasks.push(child);
+      }
+      // Track that child has this parent
+      if (!child.parentIds.includes(parent.id)) {
+        child.parentIds.push(parent.id);
+      }
+    }
+  }
+
+  // Calculate depth for each todo (for indentation)
+  // Use BFS from root nodes to handle cycles gracefully
+  function calculateDepths() {
+    const visited = new Set();
+    const queue = [];
+
+    // Start with root todos (no parents)
+    for (const todo of flatTodos) {
+      if (todo.parentIds.length === 0) {
+        todo.depth = 0;
+        queue.push(todo);
+        visited.add(todo.id);
+      }
+    }
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      for (const child of current.subTasks) {
+        // Only update depth if not visited or if this path gives deeper nesting
+        if (!visited.has(child.id)) {
+          child.depth = current.depth + 1;
+          visited.add(child.id);
+          queue.push(child);
+        }
+      }
+    }
+
+    // Handle any orphaned cycles (todos only in cycles)
+    for (const todo of flatTodos) {
+      if (!visited.has(todo.id)) {
+        todo.depth = 1; // Treat as nested
+        visited.add(todo.id);
+      }
+    }
+  }
+
+  calculateDepths();
+
+  return flatTodos;
+}
+
+// Helper to check if a space will be displayed based on URL params
+function shouldProcessSpace(
+  space,
+  urlSpaceFilters,
+  urlGroupFilters,
+  groupsById,
+) {
+  // If no filters, process all spaces
+  if (
+    (!urlSpaceFilters || urlSpaceFilters.length === 0) &&
+    (!urlGroupFilters || urlGroupFilters.length === 0)
+  ) {
+    return true;
+  }
+
+  const spaceName = (space.name || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/ /g, "-")
+    .replace(/[^A-Za-z0-9\-_]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  const spaceUrl = (space.url || "").toLowerCase();
+  const spaceId = (space.id || "").toLowerCase();
+
+  // Check if space matches space filter
+  if (urlSpaceFilters && urlSpaceFilters.length > 0) {
+    for (const filter of urlSpaceFilters) {
+      const f = filter.toLowerCase();
+      if (
+        spaceName.includes(f) ||
+        spaceUrl.includes(f) ||
+        spaceId.includes(f)
+      ) {
+        return true;
+      }
+    }
+  }
+
+  // Check if space belongs to a filtered group
+  if (urlGroupFilters && urlGroupFilters.length > 0 && space.groupId) {
+    const group = groupsById[space.groupId];
+    if (group) {
+      const groupName = (group.name || "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/ /g, "-")
+        .replace(/[^A-Za-z0-9\-_]/g, "")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      for (const filter of urlGroupFilters) {
+        const f = filter.toLowerCase();
+        if (groupName.includes(f)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Check for special "daily" filter
+  if (urlGroupFilters && urlGroupFilters.includes("daily")) {
+    if (
+      window.chrono &&
+      window.chrono.parseDate &&
+      window.chrono.parseDate(space.name)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function restructure() {
   try {
     const rawSpaces = JSON.parse(localStorage.getItem("todos") || "[]");
     const rawGroups = JSON.parse(localStorage.getItem("groups") || "[]");
 
+    // Get URL parameters to filter which spaces to fetch
+    const params = new URLSearchParams(window.location.search);
+    const groupParam = params.get("group");
+    const spaceParam = params.get("space");
+    const urlGroupFilters = groupParam
+      ? groupParam.toLowerCase().split(",")
+      : [];
+    const urlSpaceFilters = spaceParam
+      ? spaceParam.toLowerCase().split(",")
+      : [];
+
     const groupsById = {};
     for (const g of rawGroups) groupsById[g.id] = g;
+
+    // Filter to only spaces that will be displayed
+    const spacesToFetch = rawSpaces.filter((space) =>
+      shouldProcessSpace(space, urlSpaceFilters, urlGroupFilters, groupsById),
+    );
+
+    const spaceIds = spacesToFetch.map((s) => s.id).filter(Boolean);
+
+    // Fetch full space data only for filtered spaces
+    const fullSpacesById = await fetchFullSpaces(spaceIds);
 
     const spaceOutputsById = {};
     const processedSpaces = {};
@@ -141,7 +343,12 @@ function restructure() {
       const group = groupsById[space.groupId] || null;
       const cards = Array.isArray(space.cards) ? space.cards : [];
       const todoCards = cards.filter((c) => c && c.isTodo);
-      const flatTodos = todoCards.map((c) => buildFlatCard(c, space, group));
+      let flatTodos = todoCards.map((c) => buildFlatCard(c, space, group));
+
+      // Get connections from the full space data
+      const fullSpace = fullSpacesById[space.id];
+      const connections = (fullSpace && fullSpace.connections) || [];
+      flatTodos = buildSubTaskHierarchy(flatTodos, connections);
 
       const spaceKey = `space_${safeName(space.name)}_${space.id}`;
       localStorage.setItem(spaceKey, JSON.stringify(flatTodos));
@@ -211,6 +418,6 @@ function restructure() {
 if (AUTH) {
   startPolling();
   setInterval(() => {
-    restructure();
+    restructure().catch((err) => console.error("Restructure error:", err));
   }, PROCESS_INTERVAL);
 }

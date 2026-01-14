@@ -264,12 +264,17 @@ function renderOnce() {
     );
   }
 
-  function createCard(item) {
+  function createCard(item, depth) {
+    depth = depth || 0;
     var card = document.createElement("div");
     var cardLink = document.createElement("a");
     var cardTags = document.createElement("div");
 
     card.className = "card";
+    if (depth > 0) {
+      card.classList.add("sub-task");
+      card.dataset.depth = depth;
+    }
     cardTags.className = "box-tag-wrapper";
     if (item.isDone == true) card.className += " done";
 
@@ -359,8 +364,17 @@ function renderOnce() {
       } else {
         textContent = textContent + `<br>Due: ${raw}`;
       }
+    } else if (item.inheritedDueDateIso) {
+      // branch 2: inherited due date from parent task
+      textContent =
+        textContent +
+        `<br><span class="due-date inherited">Due: ${item.inheritedDueDate}</span>`;
+      item.dueDate = item.inheritedDueDate;
+      item.dueDateIso = item.inheritedDueDateIso;
+      item.dueDateInherited = true;
+      dateCards.push(item);
     } else {
-      // branch 2: date in spaceName
+      // branch 3: date in spaceName
       const parsedFromSpace = chrono.parseDate(item.spaceName);
       if (parsedFromSpace) {
         textContent = textContent.replace(`<br>${dueDateLine}`, "");
@@ -431,6 +445,68 @@ function renderOnce() {
     return card;
   }
 
+  // Render a card with its sub-tasks recursively
+  // Sub-tasks are rendered INSIDE the parent card element
+  function renderCardWithSubTasks(
+    item,
+    wrapper,
+    depth,
+    renderedInContext,
+    parentDueDate,
+  ) {
+    depth = depth || 0;
+    renderedInContext = renderedInContext || new Set();
+    parentDueDate = parentDueDate || null;
+
+    // Prevent infinite loops in circular references
+    var contextKey = item.id + "_" + depth;
+    if (renderedInContext.has(contextKey) && depth > 0) {
+      return null;
+    }
+    renderedInContext.add(contextKey);
+
+    // Inherit parent due date if this item doesn't have one
+    if (parentDueDate && !item.dueDate && !item.dueDateIso) {
+      item.inheritedDueDate = parentDueDate.display;
+      item.inheritedDueDateIso = parentDueDate.iso;
+    }
+
+    var cardEl = createCard(item, depth);
+    wrapper.appendChild(cardEl);
+
+    // Render sub-tasks INSIDE this card
+    if (item.subTasks && item.subTasks.length > 0) {
+      var subTaskWrapper = document.createElement("div");
+      subTaskWrapper.className = "sub-task-wrapper";
+
+      // Pass this card's due date (or inherited) to children
+      var dueDateToPass = null;
+      if (item.dueDateIso) {
+        dueDateToPass = { display: item.dueDate, iso: item.dueDateIso };
+      } else if (item.inheritedDueDateIso) {
+        dueDateToPass = {
+          display: item.inheritedDueDate,
+          iso: item.inheritedDueDateIso,
+        };
+      }
+
+      for (var i = 0; i < item.subTasks.length; i++) {
+        renderCardWithSubTasks(
+          item.subTasks[i],
+          subTaskWrapper,
+          depth + 1,
+          renderedInContext,
+          dueDateToPass,
+        );
+      }
+
+      // Append sub-task wrapper INSIDE the card
+      cardEl.appendChild(subTaskWrapper);
+    }
+
+    return cardEl;
+  }
+
   function createSpaceWrap(titleText, items) {
     var spaceWrap = document.createElement("div");
     spaceWrap.className = "space";
@@ -491,8 +567,14 @@ function renderOnce() {
       }
     }
 
-    items.forEach(function (it) {
-      cardWrapper.appendChild(createCard(it));
+    // Only render root tasks (those without parents) at top level
+    // Sub-tasks will be rendered nested under their parents
+    var rootItems = items.filter(function (it) {
+      return !it.parentIds || it.parentIds.length === 0;
+    });
+
+    rootItems.forEach(function (it) {
+      renderCardWithSubTasks(it, cardWrapper, 0, new Set());
     });
 
     spaceWrap.classList.add("done");
@@ -640,20 +722,33 @@ function renderOnce() {
     });
 
     function stripInlineDue(cardEl) {
-      var spans = cardEl.querySelectorAll("span.due-date");
-      for (var si = 0; si < spans.length; si++) {
-        var sp = spans[si];
-        var prev = sp.previousSibling;
-        while (
-          prev &&
-          ((prev.nodeType === 3 && /^\s*$/.test(prev.nodeValue)) ||
-            (prev.nodeType === 1 && prev.nodeName === "BR"))
-        ) {
-          var rm = prev;
-          prev = prev.previousSibling;
-          if (rm.parentNode) rm.parentNode.removeChild(rm);
+      // Strip from this card's direct content (not from nested cards)
+      var cardParagraph = cardEl.querySelector(":scope > p");
+      if (cardParagraph) {
+        var spans = cardParagraph.querySelectorAll("span.due-date");
+        for (var si = 0; si < spans.length; si++) {
+          var sp = spans[si];
+          var prev = sp.previousSibling;
+          while (
+            prev &&
+            ((prev.nodeType === 3 && /^\s*$/.test(prev.nodeValue)) ||
+              (prev.nodeType === 1 && prev.nodeName === "BR"))
+          ) {
+            var rm = prev;
+            prev = prev.previousSibling;
+            if (rm.parentNode) rm.parentNode.removeChild(rm);
+          }
+          if (sp.parentNode) sp.parentNode.removeChild(sp);
         }
-        if (sp.parentNode) sp.parentNode.removeChild(sp);
+      }
+
+      // Recursively strip from sub-tasks
+      var subTaskWrapper = cardEl.querySelector(":scope > .sub-task-wrapper");
+      if (subTaskWrapper) {
+        var subCards = subTaskWrapper.querySelectorAll(":scope > .card");
+        for (var i = 0; i < subCards.length; i++) {
+          stripInlineDue(subCards[i]);
+        }
       }
     }
 
@@ -727,12 +822,22 @@ function renderOnce() {
         cardWrapper.className = "card-wrapper";
         spaceWrap.appendChild(cardWrapper);
 
+        // Only render root tasks - sub-tasks will be nested inside
+        var rootItems = items.filter(function (it) {
+          return !it.parentIds || it.parentIds.length === 0;
+        });
+
         var spaceDone = true;
-        for (var m = 0; m < items.length; m++) {
-          var cardEl = createCard(items[m]);
+        for (var m = 0; m < rootItems.length; m++) {
+          var cardEl = renderCardWithSubTasks(
+            rootItems[m],
+            cardWrapper,
+            0,
+            new Set(),
+            null,
+          );
           stripInlineDue(cardEl);
-          if (!items[m].isDone) spaceDone = false;
-          cardWrapper.appendChild(cardEl);
+          if (!rootItems[m].isDone) spaceDone = false;
         }
 
         if (spaceDone) {

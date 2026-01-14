@@ -105,14 +105,18 @@ h3 {
 }*/
 
 .card {
-  grid-template-columns: 170px 30px;
+  grid-template-columns: 17fr 3fr;
   grid-template-rows: auto auto;
-  width: fit-content;
+  width: 200px;
   height: fit-content;
   display: grid;
   grid-template-areas:
     "text card"
     "tags tags";
+}
+
+.sub-task.card {
+  width: calc(120% - 0.2rem);
 }
 
 .card p {

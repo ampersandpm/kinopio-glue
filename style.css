@@ -200,3 +200,14 @@ a {
   font-size: 16px;
   text-decoration: underline;
 }
+
+.card.sub-task {
+  backdrop-filter: none;
+  margin-top: 0.4rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Inherited due date styling */
+.card span.due-date.inherited {
+  display: none;
+}
