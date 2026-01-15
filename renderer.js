@@ -278,6 +278,11 @@ function renderOnce() {
     cardTags.className = "box-tag-wrapper";
     if (item.isDone == true) card.className += " done";
 
+    if (item.backgroundColor) {
+      card.style.backgroundColor = `${item.backgroundColor}44`;
+      card.style.backdropFilter = `blur(10px) brightness(1.3) contrast(1.4) saturate(0.5)`;
+    }
+
     var cardText = document.createElement("p");
     card.append(cardText);
 

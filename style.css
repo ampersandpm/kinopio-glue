@@ -140,7 +140,8 @@ html {
   outline: 1px solid #aaa;
   border-radius: 4px;
   padding: 0.3rem;
-  backdrop-filter: blur(10px) brightness(1.3) contrast(1.4) saturate(0.5);
+  /*backdrop-filter: blur(10px) brightness(1.3) contrast(1.4) saturate(0.5);*/
+  /*background: url("https://cdn.kinopio.club/UCUTc8uWYJziDcNPbsx5h/139728780-451662819200815-8293939486702053929-n.jpg");*/
 }
 
 .card p {
