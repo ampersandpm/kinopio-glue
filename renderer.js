@@ -706,8 +706,9 @@ function renderOnce() {
 
     // Build: date -> { display, spaces: { spaceName: [items] } }
     var byDate = Object.create(null);
-    for (var i = 0; i < dateCards.length; i++) {
-      var it = dateCards[i];
+
+    // Helper to add an item to byDate structure
+    function addToByDate(it) {
       var key = dateKeyFromItem(it);
       var bucket =
         byDate[key] ||
@@ -717,6 +718,50 @@ function renderOnce() {
         });
       var spaceName = it.spaceName || it.spaceId || "Unknown";
       (bucket.spaces[spaceName] || (bucket.spaces[spaceName] = [])).push(it);
+    }
+
+    // First pass: add all items normally
+    for (var i = 0; i < dateCards.length; i++) {
+      addToByDate(dateCards[i]);
+    }
+
+    // Second pass: find sub-tasks with different due dates than parents
+    // and create mirrored entries
+    for (var i = 0; i < dateCards.length; i++) {
+      var it = dateCards[i];
+      // Skip items without parents or without their own due date
+      if (!it.parentIds || it.parentIds.length === 0) continue;
+      if (!it.dueDateIso || it.dueDateInherited) continue;
+
+      var itKey = dateKeyFromItem(it);
+
+      // Find parent items in dateCards
+      for (var p = 0; p < dateCards.length; p++) {
+        var parent = dateCards[p];
+        if (!it.parentIds.includes(parent.id)) continue;
+
+        var parentKey = dateKeyFromItem(parent);
+        // Only create mirror if dates are different
+        if (parentKey === itKey) continue;
+
+        // Create a mirrored version: sub-task as root, parent as its "sub-task"
+        var mirroredParent = Object.assign({}, parent);
+        mirroredParent.todoText = "re: " + mirroredParent.todoText;
+        mirroredParent.subTasks = [];
+        mirroredParent.parentIds = [it.id]; // Mark as child of the sub-task
+        mirroredParent.isMirroredParent = true;
+
+        var mirroredChild = Object.assign({}, it);
+        mirroredChild.subTasks = [mirroredParent];
+        mirroredChild.parentIds = []; // Make it a root for this date
+        mirroredChild.isMirroredRoot = true;
+        // Remove inherited date flags since this is its own date
+        delete mirroredChild.inheritedDueDate;
+        delete mirroredChild.inheritedDueDateIso;
+        delete mirroredChild.dueDateInherited;
+
+        addToByDate(mirroredChild);
+      }
     }
 
     // Sort date keys (YYYY-MM-DD strings are lex-sortable); put "no-date" last
