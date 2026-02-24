@@ -1,3 +1,6 @@
+/* layout.css — structure, positioning, sizing, and spacing.
+   Visual appearance (colors, fonts, effects) lives in style.css. */
+
 #bg {
   position: fixed;
   top: 0;
@@ -59,25 +62,45 @@
 
 #calendar {
   display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
   gap: 1rem;
+}
+
+.calendar-heading {
+  flex-basis: 100%;
+  margin-bottom: 0.25rem;
+  font-style: italic;
 }
 
 #calendar .card-wrapper {
   display: flex;
   flex-direction: column;
+  gap: 0.4rem;
+}
+
+#calendar .card-wrapper.stacked {
+  gap: 0;
+}
+
+.group {
+  overflow-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+}
+
+.group-spaces {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   gap: 1rem;
 }
 
-#calendar .date-space {
-  width: fit-content;
-}
-
-.group,
 .space {
   overflow-wrap: break-word;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   width: fit-content;
-  margin-right: calc(100vw - 450px);
 }
 
 h2,
@@ -85,79 +108,186 @@ h3 {
   width: fit-content;
 }
 
-.space h3 {
-  position: sticky;
-  left: 1rem;
-  width: fit-content;
-}
+/* -------------------------------------------------------------------
+   Project layout
+   ------------------------------------------------------------------- */
 
-.space .card-wrapper {
+.project {
+  width: 380px;
   display: flex;
-  gap: 1rem;
-}
-
-/*.space .card-wrapper.column {
   flex-direction: column;
+}
 
-  > .card {
-    grid-template-columns: 270px 30px;
-  }
-}*/
-
-.card {
-  grid-template-columns: 17fr 3fr;
-  grid-template-rows: auto auto;
-  width: 200px;
-  height: fit-content;
+.project-header {
   display: grid;
-  grid-template-areas:
-    "text card"
-    "tags tags";
+  grid-template-columns: auto auto 1fr;
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
 }
 
-.sub-task.card {
-  width: calc(120% - 0.2rem);
+.project-name {
+  margin-top: -0.2rem;
 }
 
-.card p {
-  grid-area: text;
-  padding-left: 0.2rem;
-  height: fit-content;
+.project-progress {
+  width: 36px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.6rem;
 }
 
-.card:has(a.external) {
-  grid-template-rows: 30px 30px auto auto;
-  grid-template-areas:
-    "text card"
-    "text url"
-    "text ."
-    "tags tags";
+.project-pct {
+  margin-top: 0.2rem;
 }
 
-.box-tag-wrapper {
-  grid-area: tags;
+.project-progress-fill {
+  height: 100%;
+  border-radius: 2px;
 }
 
-.card a {
-  height: 30px;
-  background-size: 16px;
-  border-radius: 15px;
+.project-tasks {
+  display: flex;
+  flex-direction: column;
+}
 
+/* -------------------------------------------------------------------
+   Task row layout
+   ------------------------------------------------------------------- */
+
+.task-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+}
+
+.task-checkbox {
+  margin-top: 0.3rem;
+}
+
+.task-text {
+  min-width: 0;
+}
+
+.task-buttons {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.task-btn {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-size: 14px;
   background-repeat: no-repeat;
   background-position: center;
 }
 
-.card a.internal {
-  grid-area: card;
-  background-image: url("images/connector.webp");
+/* -------------------------------------------------------------------
+   Loose tasks (no project)
+   ------------------------------------------------------------------- */
+
+.loose-tasks {
+  display: flex;
+  flex-direction: column;
+  width: 380px;
 }
 
-.card a.external {
-  grid-area: url;
-  background-image: url("images/arrow.webp");
+/* -------------------------------------------------------------------
+   List layout — indented tasks beneath a header row
+   ------------------------------------------------------------------- */
+
+.list-group {
+  display: flex;
+  flex-direction: column;
 }
 
-.done,
-.hidden {
-  display: none;
+.list-header-row {
+  align-items: center;
+  padding-bottom: 0px;
+  padding-left: 0.48rem;
+  gap: 0.26em;
+}
+
+.list-tasks {
+  padding-left: 1.4rem;
+}
+
+/* List progress circle */
+.list-progress-circle {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* -------------------------------------------------------------------
+   Calendar project card
+   ------------------------------------------------------------------- */
+
+.cal-project-card {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.6rem 0.75rem;
+}
+
+.cal-card-top {
+  display: block;
+}
+
+.cal-card-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.cal-card-bar {
+  flex: 1;
+}
+
+/* Calendar task card (non-project) */
+.cal-task-card {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.cal-card-due {
+  float: right;
+  margin-top: -0.1rem;
+  margin-right: -0.3rem;
+}
+
+.project-due {
+  float: right;
+  margin-top: 0.2rem;
+  margin-right: -0.2rem;
+}
+
+.cal-task-top {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.4rem;
+}
+
+.cal-task-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* indent to align with text column (checkbox 14px + gap 0.4rem) */
+  padding-left: calc(14px + 0.4rem);
 }

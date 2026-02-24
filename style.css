@@ -1,55 +1,38 @@
-@font-face {
-  font-family: "Lora";
-  src: url("fonts/Lora-Regular.ttf");
-}
+/* style.css — visual appearance: colors, fonts, effects, transitions.
+   Layout/positioning lives in layout.css. */
 
 @font-face {
-  font-family: "PP Kyoto";
-  src: url("fonts/PPKyoto-Medium.otf");
-  font-weight: normal;
+  font-family: "MLMRoman12";
+  src: url("fonts/mlmr12.ttf");
   font-style: normal;
 }
 
 @font-face {
-  font-family: "PP Kyoto";
-  src: url("fonts/PPKyoto-MediumItalic.otf");
-  font-weight: normal;
+  font-family: "MLMRoman12";
+  src: url("fonts/mlmri12.ttf");
   font-style: italic;
-}
-
-@font-face {
-  font-family: "PP Kyoto";
-  src: url("fonts/PPKyoto-Extrabold.otf");
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "PP Lettra Mono";
-  src: url("fonts/PPLettraMono-Medium.otf");
 }
 
 html {
   overscroll-behavior: none;
-  background-color: #868b88;
+  background-color: #b1adb3;
+}
+
+body {
+  font-family: "MLMRoman12";
 }
 
 #bg {
   background:
     linear-gradient(
       160deg,
-      rgba(255, 255, 255, 0.2) 0%,
-      rgba(255, 255, 255, 0) 100%
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.2) 100%
     ),
-    url("https://d2w9rnfcy7mm78.cloudfront.net/39073516/original_241bc1dddc64dd22346d2c1fae2554e2.gif?1756264026?bc=0");
+    url("https://cdn.kinopio.club/YKyan6W7wfH9kme3zm7nU/image.png");
+  filter: contrast(0.8) brightness(1.1);
   background-position: fixed;
   background-size: cover;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
 }
 
 #api-form > div {
@@ -57,7 +40,6 @@ html {
   padding: 1rem;
   outline: 1px solid #aaa;
   border-radius: 6px;
-  font-family: "PP Kyoto";
 
   > div > input {
     width: 150px;
@@ -70,10 +52,19 @@ html {
 
 #iframe-overlay {
   border-radius: 12px;
+  opacity: 0;
+  transform: scale(0.8);
+  display: none;
 
   transition:
     opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#iframe-overlay.visible {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
 }
 
 #iframe-overlay > iframe {
@@ -84,8 +75,8 @@ html {
 
 #backlog-wrapper {
   > h2 {
-    font-family: "PP Kyoto";
     font-size: 32px;
+    display: none;
   }
 
   > .date-group h2 {
@@ -106,109 +97,306 @@ html {
 .space-header-wrapper div:nth-child(1) {
   width: 22px;
   height: 22px;
-}
-
-.space-header-wrapper div:nth-child(1) {
-  margin-top: 7px;
+  margin-top: 9px;
   background-size: cover;
   margin-right: 6px;
   border-radius: 6px;
   border: 1px solid #aaa;
-  transform: rotate(45deg);
 }
 
 .space-header-wrapper {
   display: flex;
+  margin-block: 2px;
 }
 
 .group h2,
-.date-group h2 {
-  font-family: "PP Kyoto";
-  font-weight: bold;
+.date-group h2,
+.calendar-heading {
+  font-weight: normal;
   font-size: 32px;
 }
 
 .space h3,
 .date-space h3 {
-  font-family: "PP Kyoto";
   font-weight: normal;
-  font-style: italic;
   font-size: 24px;
-}
-
-.card {
-  outline: 1px solid #aaa;
-  border-radius: 4px;
-  padding: 0.3rem;
-  /*backdrop-filter: blur(10px) brightness(1.3) contrast(1.4) saturate(0.5);*/
-  /*background: url("https://cdn.kinopio.club/UCUTc8uWYJziDcNPbsx5h/139728780-451662819200815-8293939486702053929-n.jpg");*/
-}
-
-.card p {
-  font-family: "Lora";
-  font-size: 18px;
-}
-
-a:not(.internal):not(.external) {
-  color: black;
-  text-underline-offset: 2px;
-}
-
-a:not(.internal):not(.external):hover {
-  text-underline-offset: 6px;
-}
-
-.box-tag-wrapper {
-  display: flex;
-  flex-wrap: wrap-reverse;
-  gap: 0.3rem;
-  margin-top: 0.3rem;
-}
-
-.box-tag-wrapper > div {
-  width: fit-content;
-  height: fit-content;
-  border-radius: 4px;
-  padding: 0.1rem 0.4rem;
-
-  font-family: "PP Lettra Mono";
-  font-weight: bold;
-  font-size: 14px;
 }
 
 a {
   transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.card a.internal {
-  filter: opacity(10%) blur(1px);
+a:not(.task-btn) {
+  color: black;
+  text-underline-offset: 2px;
 }
 
-.card a.internal:hover {
-  filter: opacity(100%);
+a:not(.task-btn):hover {
+  text-underline-offset: 6px;
 }
 
-.card a.external {
-  filter: opacity(30%) blur(1px);
+/* -------------------------------------------------------------------
+   Project styling
+   ------------------------------------------------------------------- */
+
+.project {
+  outline: 1px solid #aaa;
+  border-radius: 4px;
+  margin-bottom: 0.6rem;
+  overflow: hidden;
 }
 
-.card a.external:hover {
-  filter: opacity(100%);
+.project-header {
+  backdrop-filter: blur(10px) brightness(1.5) saturate(0.5);
 }
 
-.card span.due-date {
-  font-family: "PP Lettra Mono";
+.project-progress {
+  background-color: rgba(0, 0, 0, 0.12);
+  outline: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.project-progress-fill {
+  background-color: #7c7;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-pct {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.project-name {
+  font-size: 20px;
+}
+
+.project-due {
   font-size: 16px;
-  text-decoration: underline;
+  outline: 1px solid #aaa;
+  background-color: #ffffff77;
+  border-radius: 4px;
+  padding-inline: 6px;
 }
 
-.card.sub-task {
-  backdrop-filter: none;
-  margin-top: 0.4rem;
-  background: rgba(255, 255, 255, 0.5);
+.project-tasks {
+  backdrop-filter: blur(8px) brightness(1.4) saturate(0.5);
 }
 
-/* Inherited due date styling */
-.card span.due-date.inherited {
+.project-tasks .task-row:last-child {
+  border-bottom: none;
+}
+
+/* -------------------------------------------------------------------
+   Task row styling
+   ------------------------------------------------------------------- */
+
+.task-row {
+  font-size: 16px;
+}
+
+.task-row.done {
+  opacity: 0.35;
+  filter: blur(1px);
+}
+
+.task-checkbox {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-bottom: -2px;
+  border: 1.5px solid rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.task-checkbox:hover {
+  border-color: rgba(0, 0, 0, 0.6);
+}
+
+.task-checkbox.checked {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.task-text {
+  overflow-wrap: break-word;
+}
+
+.task-btn {
+  background-color: transparent;
+  filter: opacity(12%) blur(1px);
+  transition:
+    filter 0.8s cubic-bezier(0.19, 1, 0.22, 1),
+    background-image 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.task-row:hover .task-btn {
+  filter: opacity(40%) blur(0px);
+}
+
+.task-btn:hover {
+  filter: opacity(100%) blur(0px) !important;
+}
+
+.task-btn-link {
+  background-image: url("images/arrow.webp");
+}
+
+.task-btn-scissors {
+  background-image: url("data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='13'%20height='9'%20viewBox='0%200%2013%209'%3e%3cg%20fill='none'%20fill-rule='evenodd'%20stroke='%23000'%20stroke-linejoin='round'%20transform='translate(1%201)'%3e%3ccircle%20cx='1.5'%20cy='6'%20r='1.5'%20stroke-linecap='square'/%3e%3ccircle%20cx='1.5'%20cy='1.5'%20r='1.5'%20stroke-linecap='square'%20transform='rotate(180%201.5%201.5)'/%3e%3cpath%20stroke-linecap='round'%20d='M3%205.268L11.91.951M3%202.732l8.91%204.317'/%3e%3c/g%3e%3c/svg%3e");
+}
+
+.task-btn-scissors.copied {
+  background-image: url("data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='13'%20height='9'%20viewBox='0%200%2013%209'%3e%3cg%20fill='none'%20fill-rule='evenodd'%20stroke='%230d0'%20stroke-linejoin='round'%20transform='translate(1%201)'%3e%3ccircle%20cx='1.5'%20cy='6'%20r='1.5'%20stroke-linecap='square'/%3e%3ccircle%20cx='1.5'%20cy='1.5'%20r='1.5'%20stroke-linecap='square'%20transform='rotate(180%201.5%201.5)'/%3e%3cpath%20stroke-linecap='round'%20d='M3%205.268L11.91.951M3%202.732l8.91%204.317'/%3e%3c/g%3e%3c/svg%3e");
+  filter: opacity(100%) blur(0px) drop-shadow(0px 0px 0px #0f0) !important;
+  transition:
+    filter 0s,
+    background-image 0s;
+}
+
+.task-btn-card {
+  background-image: url("images/connector.webp");
+}
+
+/* -------------------------------------------------------------------
+   Loose tasks styling
+   ------------------------------------------------------------------- */
+
+.loose-tasks {
+  margin-bottom: 0.6rem;
+  outline: 1px solid #aaa;
+  border-radius: 4px;
+  backdrop-filter: blur(8px) brightness(1.4) saturate(0.5);
+}
+
+.loose-tasks .task-row:last-child {
+  border-bottom: none;
+}
+
+/* -------------------------------------------------------------------
+   List styling
+   ------------------------------------------------------------------- */
+
+.list-header-row .list-title {
+  font-size: 16px;
+}
+
+.list-circle-track {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.12);
+  stroke-width: 1.5px;
+}
+
+.list-circle-arc {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.list-circle-fill {
+  fill: transparent;
+  transition: fill 0.3s ease;
+}
+
+.list-progress-circle.complete .list-circle-fill {
+  fill: var(--list-color, rgba(0, 0, 0, 0.15));
+  opacity: 0.3;
+}
+
+/* -------------------------------------------------------------------
+   Calendar
+   ------------------------------------------------------------------- */
+
+.cal-task-card {
+  backdrop-filter: blur(8px) brightness(1.4) saturate(0.5);
+  outline: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+.cal-task-card.done {
+  opacity: 0.35;
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.25);
+}
+
+.cal-task-card:hover .task-btn {
+  filter: opacity(40%) blur(0px);
+}
+
+.cal-card-name.task-text {
+  font-size: 16px;
+}
+
+.cal-project-card {
+  backdrop-filter: blur(8px) brightness(1.4) saturate(0.5);
+  outline: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+.cal-card-name {
+  font-size: 16px;
+}
+
+.cal-card-due {
+  font-size: 16px;
+  outline: 1px solid #aaa;
+  background-color: #ffffff77;
+  border-radius: 4px;
+  padding-inline: 6px;
+}
+
+.cal-card-space {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.cal-project-card.done {
+  opacity: 0.35;
+}
+
+/* -------------------------------------------------------------------
+   Calendar card tilt + stacking
+   ------------------------------------------------------------------- */
+
+.cal-project-card,
+.cal-task-card {
+  transform: rotate(var(--base-rot, 0deg));
+  transform-origin: center center;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    z-index 0s;
+  position: relative;
+}
+
+.cal-project-card:hover,
+.cal-task-card:hover {
+  transform: rotate(calc(var(--base-rot, 0deg) + 2deg));
+  z-index: 10;
+}
+
+/* -------------------------------------------------------------------
+   Done / Hidden states
+   ------------------------------------------------------------------- */
+
+.done,
+.hidden {
   display: none;
+}
+
+.task-row.done {
+  display: grid;
+}
+
+.cal-project-card.done,
+.cal-task-card.done {
+  display: flex;
+}
+
+.list-group.done {
+  display: flex;
+  opacity: 0.35;
 }
