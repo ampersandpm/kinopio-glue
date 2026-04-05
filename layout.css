@@ -2,110 +2,121 @@
    Visual appearance (colors, fonts, effects) lives in style.css. */
 
 #bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  width: 100vw;
-  height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100vw;
+    height: 100vh;
 }
 
 #api-form {
-  position: fixed;
-  inset: 0px;
-  width: 290px;
-  height: 430px;
-  margin: auto;
+    position: fixed;
+    inset: 0px;
+    width: 290px;
+    height: 430px;
+    margin: auto;
 }
 
 #iframe-overlay {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  width: calc(100vw - 476px);
-  height: calc(100vh - 20px);
-  z-index: 9999;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: calc(100vw - 476px);
+    height: calc(100vh - 20px);
+    z-index: 9999;
 }
 
 #iframe-overlay > iframe {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 #iframe-overlay > button {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 32px;
-  height: 30px;
-  border-radius: 6px;
-  border: none;
-  background-color: #ffb8b3;
-  outline: 1px solid #b2817d;
-  outline-offset: -1px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 32px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    background-color: #ffb8b3;
+    outline: 1px solid #b2817d;
+    outline-offset: -1px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  cursor: pointer;
+    cursor: pointer;
 }
 
 #iframe-overlay > button > img {
-  width: 60%;
-  height: 60%;
+    width: 60%;
+    height: 60%;
 }
 
 #render-target {
-  margin: 1rem;
+    margin: 1rem;
 }
 
 #calendar {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 1rem;
 }
 
 .calendar-heading {
-  flex-basis: 100%;
-  margin-bottom: 0.25rem;
-  font-style: italic;
+    flex-basis: 100%;
+    margin-bottom: 0.25rem;
+    font-style: italic;
 }
 
 #calendar .card-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
 }
 
 #calendar .card-wrapper.stacked {
-  gap: 0;
+    gap: 0;
 }
 
 .group {
-  overflow-wrap: break-word;
-  display: flex;
-  flex-direction: column;
+    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column;
 }
 
 .group-spaces {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
+    --space-column-width: 23rem;
+    --space-column-gap: 1rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: var(--space-column-gap);
+}
+
+.group-spaces-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-column-gap);
+    width: min(100%, var(--space-column-width));
+    max-width: var(--space-column-width);
+    flex: 0 1 var(--space-column-width);
 }
 
 .space {
-  overflow-wrap: break-word;
-  display: flex;
-  flex-direction: column;
-  width: fit-content;
+    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 h2,
 h3 {
-  width: fit-content;
+    width: fit-content;
 }
 
 /* -------------------------------------------------------------------
@@ -113,44 +124,44 @@ h3 {
    ------------------------------------------------------------------- */
 
 .project {
-  width: 380px;
-  display: flex;
-  flex-direction: column;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .project-header {
-  display: grid;
-  grid-template-columns: auto auto 1fr;
-  align-items: start;
-  gap: 0.5rem;
-  padding: 0.45rem 0.6rem;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: start;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
 }
 
 .project-name {
-  margin-top: -0.2rem;
+    margin-top: -0.2rem;
 }
 
 .project-progress {
-  width: 36px;
-  height: 8px;
-  flex-shrink: 0;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 0.6rem;
+    width: 36px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.6rem;
 }
 
 .project-pct {
-  margin-top: 0.2rem;
+    margin-top: 0.2rem;
 }
 
 .project-progress-fill {
-  height: 100%;
-  border-radius: 2px;
+    height: 100%;
+    border-radius: 2px;
 }
 
 .project-tasks {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 /* -------------------------------------------------------------------
@@ -158,40 +169,40 @@ h3 {
    ------------------------------------------------------------------- */
 
 .task-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: start;
-  gap: 0.4rem;
-  padding: 0.25rem 0.6rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: 0.4rem;
+    padding: 0.25rem 0.6rem;
 }
 
 .task-checkbox {
-  margin-top: 0.3rem;
+    margin-top: 0.3rem;
 }
 
 .task-text {
-  min-width: 0;
+    min-width: 0;
 }
 
 .task-buttons {
-  display: flex;
-  gap: 0.25rem;
-  flex-shrink: 0;
-  align-items: center;
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    align-items: center;
 }
 
 .task-btn {
-  width: 23px;
-  height: 23px;
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background-size: 14px;
-  background-repeat: no-repeat;
-  background-position: center;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-size: 14px;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 /* -------------------------------------------------------------------
@@ -199,9 +210,9 @@ h3 {
    ------------------------------------------------------------------- */
 
 .loose-tasks {
-  display: flex;
-  flex-direction: column;
-  width: 380px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 /* -------------------------------------------------------------------
@@ -209,25 +220,25 @@ h3 {
    ------------------------------------------------------------------- */
 
 .list-group {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .list-header-row {
-  align-items: center;
-  padding-bottom: 0px;
-  padding-left: 0.48rem;
-  gap: 0.26em;
+    align-items: center;
+    padding-bottom: 0px;
+    padding-left: 0.48rem;
+    gap: 0.26em;
 }
 
 .list-tasks {
-  padding-left: 1.4rem;
+    padding-left: 1.4rem;
 }
 
 /* List progress circle */
 .list-progress-circle {
-  flex-shrink: 0;
-  display: block;
+    flex-shrink: 0;
+    display: block;
 }
 
 /* -------------------------------------------------------------------
@@ -235,59 +246,59 @@ h3 {
    ------------------------------------------------------------------- */
 
 .cal-project-card {
-  width: 240px;
-  display: flex;
-  flex-direction: column;
-  padding: 0.6rem 0.75rem;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    padding: 0.6rem 0.75rem;
 }
 
 .cal-card-top {
-  display: block;
+    display: block;
 }
 
 .cal-card-bottom {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.15rem;
 }
 
 .cal-card-bar {
-  flex: 1;
+    flex: 1;
 }
 
 /* Calendar task card (non-project) */
 .cal-task-card {
-  width: 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.45rem 0.6rem;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.45rem 0.6rem;
 }
 
 .cal-card-due {
-  float: right;
-  margin-top: -0.1rem;
-  margin-right: -0.3rem;
+    float: right;
+    margin-top: -0.1rem;
+    margin-right: -0.3rem;
 }
 
 .project-due {
-  float: right;
-  margin-top: 0.2rem;
-  margin-right: -0.2rem;
+    float: right;
+    margin-top: 0.2rem;
+    margin-right: -0.2rem;
 }
 
 .cal-task-top {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: start;
-  gap: 0.4rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.4rem;
 }
 
 .cal-task-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  /* indent to align with text column (checkbox 14px + gap 0.4rem) */
-  padding-left: calc(14px + 0.4rem);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* indent to align with text column (checkbox 14px + gap 0.4rem) */
+    padding-left: calc(14px + 0.4rem);
 }

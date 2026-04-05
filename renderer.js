@@ -1000,6 +1000,34 @@ function renderOnce() {
 
     const spacesRow = document.createElement("div");
     spacesRow.className = "group-spaces";
+    groupWrap.appendChild(spacesRow);
+    target.appendChild(groupWrap);
+
+    const rootFontSize =
+      parseFloat(window.getComputedStyle(document.documentElement).fontSize) ||
+      16;
+    const spaceColumnWidth = 20 * rootFontSize;
+    const spaceColumnGap = 1 * rootFontSize;
+    const availableWidth =
+      spacesRow.clientWidth || target.clientWidth || window.innerWidth;
+    const columnCount = Math.max(
+      1,
+      Math.min(
+        spacesArray.length,
+        Math.floor(
+          (availableWidth + spaceColumnGap) /
+            (spaceColumnWidth + spaceColumnGap),
+        ),
+      ),
+    );
+    const columns = [];
+
+    for (let ci = 0; ci < columnCount; ci++) {
+      const column = document.createElement("div");
+      column.className = "group-spaces-column";
+      spacesRow.appendChild(column);
+      columns.push(column);
+    }
 
     spacesArray
       .slice()
@@ -1010,10 +1038,14 @@ function renderOnce() {
         const todos = sp && sp.todos ? sp.todos : [];
         const name = sp && sp.spaceName ? sp.spaceName : "";
         const spaceEl = createSpaceWrap(name, todos);
-        spacesRow.appendChild(spaceEl);
+        let targetColumn = columns[0];
+        for (let i = 1; i < columns.length; i++) {
+          if (columns[i].offsetHeight < targetColumn.offsetHeight) {
+            targetColumn = columns[i];
+          }
+        }
+        targetColumn.appendChild(spaceEl);
       });
-
-    groupWrap.appendChild(spacesRow);
 
     // Mark group done if all spaces are done
     groupWrap.classList.add("done");
@@ -1024,8 +1056,6 @@ function renderOnce() {
         break;
       }
     }
-
-    target.appendChild(groupWrap);
   }
 
   // Render groups
@@ -1346,4 +1376,15 @@ window.addEventListener("processedStorageUpdated", () => {
   } catch (e) {
     console.error("Re-render error:", e);
   }
+});
+
+window.addEventListener("resize", () => {
+  clearTimeout(window.__ks_resize_timer);
+  window.__ks_resize_timer = setTimeout(() => {
+    try {
+      renderOnce();
+    } catch (e) {
+      console.error("Resize render error:", e);
+    }
+  }, 120);
 });
