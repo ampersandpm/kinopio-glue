@@ -143,10 +143,11 @@ function buildFlatCard(card, space, group) {
     });
   }
 
+  const projectBox = containingBoxes.length ? containingBoxes[0] : null;
   const projectName = projects.length ? projects[0].name : null;
   const projectColor = projects.length ? projects[0].color : null;
   const projectRawDue = projects.length ? projects[0].rawDue : null;
-  const projectBoxId = containingBoxes.length ? containingBoxes[0].id : null;
+  const projectBoxId = projectBox ? projectBox.id : null;
 
   // Resolve list info from pre-fetched cache
   let listName = null;
@@ -166,6 +167,8 @@ function buildFlatCard(card, space, group) {
     projectColor,
     projectRawDue,
     projectBoxId,
+    projectBoxX: projectBox ? projectBox.x : null,
+    projectBoxY: projectBox ? projectBox.y : null,
     listName,
     listColor,
     listPositionIndex,

@@ -373,12 +373,21 @@ function renderOnce() {
   }
 
   // Sort by y-position, then x-position as tiebreaker
+  function compareByPosition(a, b) {
+    const dy = (a.y ?? 0) - (b.y ?? 0);
+    if (dy !== 0) return dy;
+    const dx = (a.x ?? 0) - (b.x ?? 0);
+    if (dx !== 0) return dx;
+
+    const aKey = String(a.id || a.projectBoxId || a.projectId || a.name || "");
+    const bKey = String(b.id || b.projectBoxId || b.projectId || b.name || "");
+    if (aKey < bKey) return -1;
+    if (aKey > bKey) return 1;
+    return 0;
+  }
+
   function sortByPosition(items) {
-    return items.slice().sort(function (a, b) {
-      const dy = (a.y || 0) - (b.y || 0);
-      if (dy !== 0) return dy;
-      return (a.x || 0) - (b.x || 0);
-    });
+    return items.slice().sort(compareByPosition);
   }
 
   function isMobile() {
@@ -883,8 +892,16 @@ function renderOnce() {
     return proj;
   }
 
+  function appendLooseTaskChunk(spaceWrap, tasks) {
+    if (!tasks.length) return;
+    const looseWrap = document.createElement("div");
+    looseWrap.className = "loose-tasks";
+    looseWrap.appendChild(renderTasksWithLists(tasks));
+    spaceWrap.appendChild(looseWrap);
+  }
+
   // -------------------------------------------------------------------
-  // Render a space: group tasks by project, loose tasks separate
+  // Render a space: order loose tasks and project blocks by position
   // -------------------------------------------------------------------
   function createSpaceWrap(titleText, items) {
     const spaceWrap = document.createElement("div");
@@ -930,6 +947,8 @@ function renderOnce() {
             color: it.projectColor,
             rawDue: it.projectRawDue,
             id: projKey,
+            x: it.projectBoxX,
+            y: it.projectBoxY,
             tasks: [],
           };
         }
@@ -937,14 +956,6 @@ function renderOnce() {
       } else {
         looseTasks.push(it);
       }
-    }
-
-    // Sort tasks within each project by position
-    const projectNames = Object.keys(projectMap).sort();
-    for (let p = 0; p < projectNames.length; p++) {
-      projectMap[projectNames[p]].tasks = sortByPosition(
-        projectMap[projectNames[p]].tasks,
-      );
     }
 
     // Sort loose tasks by position, parse due dates, register in calendar
@@ -958,17 +969,52 @@ function renderOnce() {
       }
     }
 
-    // Render loose tasks first (above projects), with inline list grouping
-    if (sortedLoose.length) {
-      const looseWrap = document.createElement("div");
-      looseWrap.className = "loose-tasks";
-      looseWrap.appendChild(renderTasksWithLists(sortedLoose));
-      spaceWrap.appendChild(looseWrap);
-    }
+    // Order loose tasks and project blocks together using the space positions.
+    const projects = Object.keys(projectMap).map(function (key) {
+      const project = projectMap[key];
+      project.tasks = sortByPosition(project.tasks);
+      const firstTask = project.tasks[0] || null;
+      if (project.x == null) project.x = firstTask ? firstTask.x : 0;
+      if (project.y == null) project.y = firstTask ? firstTask.y : 0;
+      return project;
+    });
 
-    // Then render projects
-    for (let p2 = 0; p2 < projectNames.length; p2++) {
-      const pData = projectMap[projectNames[p2]];
+    const orderedEntries = sortedLoose
+      .map(function (task) {
+        return {
+          type: "task",
+          id: task.id,
+          x: task.x,
+          y: task.y,
+          task: task,
+        };
+      })
+      .concat(
+        projects.map(function (project) {
+          return {
+            type: "project",
+            id: project.id,
+            name: project.name,
+            x: project.x,
+            y: project.y,
+            project: project,
+          };
+        }),
+      )
+      .sort(compareByPosition);
+
+    const looseChunk = [];
+    for (let p2 = 0; p2 < orderedEntries.length; p2++) {
+      const entry = orderedEntries[p2];
+      if (entry.type === "task") {
+        looseChunk.push(entry.task);
+        continue;
+      }
+
+      appendLooseTaskChunk(spaceWrap, looseChunk);
+      looseChunk.length = 0;
+
+      const pData = entry.project;
       const projEl = createProjectDiv(
         pData.name,
         pData.color,
@@ -978,6 +1024,8 @@ function renderOnce() {
       );
       spaceWrap.appendChild(projEl);
     }
+
+    appendLooseTaskChunk(spaceWrap, looseChunk);
 
     // Mark space done if everything is done
     const allDone = items.every(function (it) {
